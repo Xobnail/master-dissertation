@@ -4,32 +4,38 @@ import numpy as np
 from tsaug import Drift, AddNoise
 from tsaug.visualization import plot
 
-normPath = '../Src/Норма/onlyTxt/'
-deviationPath = '../Src/Отклонение/onlyTxt/'
+normFolder = '../Src/Норма/onlyTxt/'
+deviationFolder = '../Src/Отклонение/onlyTxt/'
 
 noiseAugmenter = AddNoise(0.015, 0.025)
 
+# TODO: check nan values in source files
+# and fix formatting float numbers 
+
+# %%
 i = 0
-for filename in os.listdir(normPath):
-    
-    relativePath = os.path.join(normPath, filename)
+for fileName in os.listdir(normFolder):    
+    if not fileName.startswith('aug_'):
+        normFile = os.path.join(normFolder, fileName)
 
-    if os.path.isfile(relativePath):     
-        X = np.loadtxt(relativePath)
-        X_aug = noiseAugmenter.augment(X)
+        if os.path.isfile(normFile):     
+            X = np.loadtxt(normFile)
+            X_aug = noiseAugmenter.augment(X)
 
-        with open(normPath + 'aug_' + filename, 'w') as aug_file:
-            # !Delimeter doesnt work, try [X_aug]!!!
-            np.savetxt(aug_file, X_aug, delimiter=" ")
+            with open(normFolder + 'aug_' + fileName, 'w') as aug_file:
+                np.savetxt(aug_file, [X_aug], delimiter=' ')
 
-        if (i < 2):
-            print(relativePath)
-            print("Before:")
-            plot(X)
-            print("After:")
-            plot(X_aug)  
+            if i < 2:
+                print(normFile)
+                print("Before:")
+                plot(X)
+                print("After:")
+                plot(X_aug)  
+            
+            if i < 25:
+                print(X.size, X_aug.size)
 
-    i += 1
+        i += 1
 
 # %%
 
