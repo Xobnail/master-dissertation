@@ -8,8 +8,6 @@ from tsaug.visualization import plot
 normFolder = '../Src/Норма/onlyTxt/'
 deviationFolder = '../Src/Отклонение/onlyTxt/'
 
-# noiseAugmenter = AddNoise(0.015, 0.025)
-
 # %%
 i = 0
 for fileName in os.listdir(normFolder):
@@ -17,37 +15,46 @@ for fileName in os.listdir(normFolder):
         normFile = os.path.join(normFolder, fileName)
 
         if os.path.isfile(normFile):
-            X = np.loadtxt(normFile)
-            X_aug_jitter = aug.jitter(X, sigma=0.005)
-            X_aug_warp = aug.magnitude_warp(X_aug_jitter)
+            # загружаем временной ряд в одномерный массив
+            X_src = np.loadtxt(normFile)
+            # создаем пустой 3D массив в формате, необходимом для работы с Uchidalab 
+            X = np.zeros((X_src.size, X_src.size, 1))
 
+            # заполняем 3D массив
+            j = 0
+            while j < X_src.size:
+                X[0,j,0] = X_src[j]
+                j+=1
+
+            # if i < 1:
+            #     print(type(X))
+            #     print(X.shape)
+            #     print(X)
+
+            # аугментируем данные
+            X_aug_jitter = aug.jitter(X, sigma=0.005)
+            X_aug_scale = aug.scaling(X_aug_jitter, 0.1)
+
+            # сохарняем данные в файл
             with open(normFolder + 'aug_' + fileName, 'w') as aug_file:
-                np.savetxt(aug_file, [X_aug_warp], delimiter=' ', fmt='%01.16f')
+                np.savetxt(aug_file, X_aug_scale[0], delimiter=' ', fmt='%01.16f')
+
+            # заполняем 1D массив для отрисовки
+            X_after = np.zeros(X_src.size)
+            p = 0
+            while p < X_src.size:
+                X_after[p] = X_aug_scale[0,p,0]
+                p+=1
+
+            print(i)
 
             if i < 2:
                 print(normFile)
                 print("Before:")
-                plot(X)
+                plot(X_src)
                 print("After:")
-                plot(X_aug_warp)
-
-            # if i < 25:
-            #     print(X.size, X_aug.size)
+                plot(X_after)
 
         i += 1
 
-# # %%
-# directory = '../Src/Норма/onlyTxt/'
-
-# X1 = np.loadtxt(directory + "20210917-181304_0.txt")
-
-# i = 0
-# while i < 5:
-#     X1[i] = np.nan
-#     i += 1
-
-# X_aug_test = aug.jitter(X1, sigma=0.005)
-# print(X_aug_test)
-# plot(X1)
-# plot(X_aug_test)
 # %%
