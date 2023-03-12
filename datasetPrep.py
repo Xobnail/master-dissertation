@@ -35,16 +35,16 @@ for fileName in os.listdir(normFolder):
             X_aug_jitter = aug.jitter(X, sigma=0.005)
             X_aug_scale = aug.scaling(X_aug_jitter, 0.1)
 
-            # сохарняем данные в файл
-            with open(normFolder + 'aug_' + fileName, 'w') as aug_file:
-                np.savetxt(aug_file, X_aug_scale[0], delimiter=' ', fmt='%01.16f')
-
-            # заполняем 1D массив для отрисовки
-            X_after = np.zeros(X_src.size)
+            # заполняем 1D массив для отрисовки и для корректной записи в файл
+            X_result = np.zeros(X_src.size)
             p = 0
             while p < X_src.size:
-                X_after[p] = X_aug_scale[0,p,0]
+                X_result[p] = X_aug_scale[0,p,0]
                 p+=1
+
+            # сохарняем данные в файл
+            with open(normFolder + 'aug_' + fileName, 'w') as aug_file:
+                np.savetxt(aug_file, [X_result], delimiter=' ', fmt='%01.16f')
 
             print(i)
 
@@ -53,7 +53,7 @@ for fileName in os.listdir(normFolder):
                 print("Before:")
                 plot(X_src)
                 print("After:")
-                plot(X_after)
+                plot(X_result)
 
         i += 1
 
