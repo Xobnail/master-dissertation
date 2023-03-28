@@ -1,7 +1,9 @@
 # %%
 import os
 import numpy as np
+# Uchidalab
 import time_series_augmentation.utils.augmentation as aug
+import time_series_augmentation.utils.helper as helper
 # from tsaug import Drift, AddNoise
 from tsaug.visualization import plot
 
@@ -42,7 +44,7 @@ for fileName in os.listdir(normFolder):
                 X_result[p] = X_aug_scale[0,p,0]
                 p+=1
 
-            # сохарняем данные в файл
+            # сохраняем данные в файл
             with open(normFolder + 'aug_' + fileName, 'w') as aug_file:
                 np.savetxt(aug_file, [X_result], delimiter=' ', fmt='%01.16f')
 
@@ -51,9 +53,9 @@ for fileName in os.listdir(normFolder):
             if i < 2:
                 print(normFile)
                 print("Before:")
-                plot(X_src)
+                helper.plot1d(X_src, ylim=(0.0, 0.5))
                 print("After:")
-                plot(X_result)
+                helper.plot1d(X_result, ylim=(0.0, 0.5))
 
         i += 1
 
