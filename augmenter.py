@@ -5,7 +5,8 @@ import plotter
 import time_series_augmentation.utils.augmentation as aug
 import time_series_augmentation.utils.helper as helper
 
-def augment(dataFolder, pngFolder, jitterSigma, scalingSigma):
+
+def augment(dataFolder, pngFolder, jitterSigma, scalingSigma, warpingSigma, warpingKnot, show=False):
     """
     Аугментирует временные ряды и сохраняет в файл
 
@@ -14,48 +15,51 @@ def augment(dataFolder, pngFolder, jitterSigma, scalingSigma):
     pngFolder: Путь к папку для сохранения графиков
     jitterSigma: Гиперпараметр sigma для метода Дрожание
     scalingSigma: Гиперпараметр sigma для метода Масштабирование
+    warpingSigma: Гиперпараметр sigma для метода Деформация магнитуды
+    warpingKnot: Гиперпараметр knot (количество узлов) для метода Деформация магнитуды
+    show: Показать график
     """
 
-    # валидация
-    if (dataFolder is None or pngFolder is None):
-        print("Не указан путь к папке с данными (dataFolder или pngFolder)")
+    # Валидация
+    if dataFolder is None or pngFolder is None:
+        print("Не указан путь к папке с данными (dataFolder или pngFolder)!")
         return
 
-    if (jitterSigma is None or scalingSigma is None):
-        print("Не указаны гиперпараметры для аугментации")
+    if jitterSigma is None or scalingSigma is None or warpingSigma is None or warpingKnot is None:
+        print("Не указаны гиперпараметры для аугментации!")
         return
 
     for fileName in os.listdir(dataFolder):
         if not fileName.startswith('aug_'):
             normFile = os.path.join(dataFolder, fileName)
             if os.path.isfile(normFile):
-                # загружаем временной ряд в одномерный массив
+                # Загружаем временной ряд в одномерный массив
                 X_src = np.loadtxt(normFile)
 
-                # создаем пустой 3D массив в формате, необходимом для работы с Uchidalab
+                # Создаем пустой 3D массив в формате, необходимом для работы с Uchidalab
                 X = np.zeros((X_src.size, X_src.size, 1))
 
-                # заполняем 3D массив
+                # Заполняем 3D массив
                 j = 0
                 while j < X_src.size:
                     X[0, j, 0] = X_src[j]
                     j += 1
 
-                # аугментируем данные
-                X_aug_jitter = aug.jitter(X, sigma=jitterSigma)
-                X_aug_scale = aug.scaling(X_aug_jitter, sigma=scalingSigma)
+                # Аугментируем данные
+                X_aug = aug.jitter(X, sigma=jitterSigma)
+                X_aug = aug.scaling(X_aug, sigma=scalingSigma)
+                X_aug = aug.magnitude_warp(X_aug, warpingSigma, warpingKnot)
 
-                # заполняем 1D массив для отрисовки и для корректной записи в файл
+                # Заполняем 1D массив для отрисовки и для корректной записи в файл
                 X_result = np.zeros(X_src.size)
                 i = 0
                 while i < X_src.size:
-                    X_result[i] = X_aug_scale[0, i, 0]
+                    X_result[i] = X_aug[0, i, 0]
                     i += 1
 
-                # сохраняем данные в файл
+                # Сохраняем данные в файл
                 with open(dataFolder + 'aug_' + fileName, 'w') as aug_file:
-                    np.savetxt(aug_file, [X_result],
-                               delimiter=' ', fmt='%01.16f')
+                    np.savetxt(aug_file, [X_result], delimiter=' ', fmt='%01.16f')
 
-                # сохраняем графики в png
-                plotter.save(X_result, 'aug_' + fileName.replace('.txt',''), pngFolder)
+                # Сохраняем графики в png
+                plotter.save(X_result, 'aug_' + fileName.replace('.txt', ''), pngFolder, show)
