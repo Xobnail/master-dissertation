@@ -5,8 +5,7 @@ import plotter
 import time_series_augmentation.utils.augmentation as aug
 import time_series_augmentation.utils.helper as helper
 
-
-def augment(dataFolder, pngFolder, jitterSigma, scalingSigma, warpingSigma, warpingKnot, show=False):
+def augment(dataFolder, pngFolder, jitterSigma, scalingSigma, warpingSigma, warpingKnot, show=False, experiment=0):
     """
     Аугментирует временные ряды и сохраняет в файл
 
@@ -18,6 +17,7 @@ def augment(dataFolder, pngFolder, jitterSigma, scalingSigma, warpingSigma, warp
     warpingSigma: Гиперпараметр sigma для метода Деформация магнитуды
     warpingKnot: Гиперпараметр knot (количество узлов) для метода Деформация магнитуды
     show: Показать график
+    experiment: Номер опыта
     """
 
     # Валидация
@@ -58,8 +58,8 @@ def augment(dataFolder, pngFolder, jitterSigma, scalingSigma, warpingSigma, warp
                     i += 1
 
                 # Сохраняем данные в файл
-                with open(dataFolder + 'aug_' + fileName, 'w') as aug_file:
+                with open(dataFolder + 'aug_exp' + str(experiment) + '_' + fileName, 'w') as aug_file:
                     np.savetxt(aug_file, [X_result], delimiter=' ', fmt='%01.16f')
 
                 # Сохраняем графики в png
-                plotter.save(X_result, 'aug_' + fileName.replace('.txt', ''), pngFolder, show)
+                plotter.save(X_result, 'aug_exp' + str(experiment) + '_' + fileName.replace('.txt', ''), pngFolder, show)
